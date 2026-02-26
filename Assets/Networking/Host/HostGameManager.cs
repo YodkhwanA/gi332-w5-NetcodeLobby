@@ -10,16 +10,17 @@ using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
+using Unity.Services.Authentication;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class HostGameManager
+public class HostGameManager : IDisposable
 {
     private Allocation allocation;
-    private string joinCode;
-    private string lobbyId;
 
-    private NetworkServer networkServer;
+    private string lobbyId;
+    public string JoinCode { get; private set; }
+    public NetworkServer NetworkServer { get; private set; }
 
     private const int MaxConnections = 20;
     private const string GameSceneName = "Game";
@@ -37,9 +38,9 @@ public class HostGameManager
         }
         try
         {
-            joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
-            Debug.Log(joinCode);
-            PlayerPrefs.SetString(JoinCodeKey, joinCode);
+            JoinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
+            Debug.Log(JoinCode);
+            PlayerPrefs.SetString(JoinCodeKey, JoinCode);
         }
         catch (Exception e)
         {
@@ -61,7 +62,7 @@ public class HostGameManager
                 {
                     "JoinCode",new DataObject(
                         visibility: DataObject.VisibilityOptions.Member,
-                        value: joinCode
+                        value: JoinCode
                     )
                 }
             };
@@ -78,11 +79,13 @@ public class HostGameManager
             return;
         }
 
-        networkServer = new NetworkServer(NetworkManager.Singleton);
+        NetworkServer = new NetworkServer(NetworkManager.Singleton);
 
         UserData userData = new UserData
         {
-            userName = PlayerPrefs.GetString(NameSelector.PlayerNameKey, "Missing Name")
+            userName = PlayerPrefs.GetString(NameSelector.PlayerNameKey, "Missing Name"),
+            userAuthId = AuthenticationService.Instance.PlayerId,
+            teamIndex = PlayerPrefs.GetInt(TeamSelector.PlayerTeamKey, 0)
         };
         string payload = JsonUtility.ToJson(userData);
         byte[] payloadBytes = Encoding.UTF8.GetBytes(payload);
@@ -90,6 +93,8 @@ public class HostGameManager
         NetworkManager.Singleton.NetworkConfig.ConnectionData = payloadBytes;
 
         NetworkManager.Singleton.StartHost();
+
+        NetworkServer.OnClientLeft += HandleClientLeft;
 
         NetworkManager.Singleton.SceneManager.LoadScene(GameSceneName, LoadSceneMode.Single);
     }
@@ -103,5 +108,45 @@ public class HostGameManager
             LobbyService.Instance.SendHeartbeatPingAsync(lobbyId);
             yield return delay;
         }
+    }
+
+    public void Dispose()
+    {
+        Shutdown();
+    }
+
+    private async void HandleClientLeft(string authId)
+    {
+        try
+        {
+            await LobbyService.Instance.RemovePlayerAsync(lobbyId, authId);
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.Log(e);
+        }
+    }
+
+    public async void Shutdown()
+    {
+        HostSingleton.Instance.StopCoroutine(nameof(HeartbeatLobby));
+
+        if (!string.IsNullOrEmpty(lobbyId))
+        {
+            try
+            {
+                await LobbyService.Instance.DeleteLobbyAsync(lobbyId);
+            }
+            catch (LobbyServiceException e)
+            {
+                Debug.Log(e);
+            }
+
+            lobbyId = string.Empty;
+        }
+
+        NetworkServer.OnClientLeft -= HandleClientLeft;
+
+        NetworkServer?.Dispose();
     }
 }
