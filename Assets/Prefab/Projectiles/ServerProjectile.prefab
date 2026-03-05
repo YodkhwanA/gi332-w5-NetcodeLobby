@@ -12,6 +12,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ServerProjectile
       objectReference: {fileID: 0}
+    - target: {fileID: 5882318660492353080, guid: 352dd7138ba243140aafa9acf60a316c, type: 3}
+      propertyPath: projectile
+      value: 
+      objectReference: {fileID: 6846810277144065264}
     - target: {fileID: 7009303600407254740, guid: 352dd7138ba243140aafa9acf60a316c, type: 3}
       propertyPath: m_LocalPosition.x
       value: -1.52
@@ -60,6 +64,17 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 972403420746491418}
   m_SourcePrefab: {fileID: 100100000, guid: 352dd7138ba243140aafa9acf60a316c, type: 3}
+--- !u!114 &6846810277144065264 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2734590600508873750, guid: 352dd7138ba243140aafa9acf60a316c, type: 3}
+  m_PrefabInstance: {fileID: 8860821282084514022}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8012656819074064975}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b86a4726585468f4eb9b14f256015dca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Projectile
 --- !u!1 &8012656819074064975 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1568760027632306857, guid: 352dd7138ba243140aafa9acf60a316c, type: 3}
@@ -77,4 +92,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: df63d189bc98ec241a4e236739af6a94, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DealDamageOnContact
+  projectile: {fileID: 6846810277144065264}
   damage: 5

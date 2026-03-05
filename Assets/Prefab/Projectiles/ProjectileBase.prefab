@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 4069514926144011173}
   - component: {fileID: 111065334055338223}
   - component: {fileID: 5882318660492353080}
+  - component: {fileID: 2734590600508873750}
   m_Layer: 6
   m_Name: ProjectileBase
   m_TagString: Untagged
@@ -29,7 +30,7 @@ Transform:
   m_GameObject: {fileID: 1568760027632306857}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.52, y: -1.47756, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -123,3 +124,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e96dc374143d57143ab3138a2023d29d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DestroySelfOnContact
+--- !u!114 &2734590600508873750
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1568760027632306857}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b86a4726585468f4eb9b14f256015dca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Projectile

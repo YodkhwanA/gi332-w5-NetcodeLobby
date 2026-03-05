@@ -1,10 +1,13 @@
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class ProjectileLauncher : NetworkBehaviour
 {
     [Header("References")]
+    [SerializeField] private TankPlayer player;
     [SerializeField] private InputReader inputReader;
+    [SerializeField] private CoinWallet wallet;
     [SerializeField] private Transform projectileSpawnPoint;
     [SerializeField] private GameObject serverProjectilePrefab;
     [SerializeField] private GameObject clientProjectilePrefab;
@@ -15,7 +18,9 @@ public class ProjectileLauncher : NetworkBehaviour
     [SerializeField] private float projectileSpeed;
     [SerializeField] private float fireRate;
     [SerializeField] private float muzzleFlashDuration;
+    [SerializeField] private int costToFire = 5;
 
+    private bool isPointerOverUI;
     private bool shouldFire;
     private float timer;
     private float muzzleFlashTimer;
@@ -50,25 +55,35 @@ public class ProjectileLauncher : NetworkBehaviour
         {
             timer -= Time.deltaTime;
         }
+        isPointerOverUI = EventSystem.current.IsPointerOverGameObject();
 
         if (!shouldFire) { return; }
 
         if (timer > 0) { return; }
 
+        if (wallet.TotalCoins.Value < costToFire) { return; }
+
         PrimaryFireServerRpc(projectileSpawnPoint.position, projectileSpawnPoint.up);
-        SpawnDummyProjectile(projectileSpawnPoint.position, projectileSpawnPoint.up);
+        SpawnDummyProjectile(projectileSpawnPoint.position, projectileSpawnPoint.up, player.TeamIndex.Value);
 
         timer = 1 / fireRate;
     }
 
     private void HandlePrimaryFire(bool shouldFire)
     {
+        if (shouldFire)
+        {
+            if (isPointerOverUI) { return; }
+        }
         this.shouldFire = shouldFire;
     }
 
     [Rpc(SendTo.Server)]
     private void PrimaryFireServerRpc(Vector3 spawnPos, Vector3 direction)
     {
+        if (wallet.TotalCoins.Value < costToFire) { return; }
+        wallet.SpendCoins(costToFire);
+
         GameObject projectileInstance = Instantiate(
             serverProjectilePrefab,
             spawnPos,
@@ -77,9 +92,9 @@ public class ProjectileLauncher : NetworkBehaviour
         projectileInstance.transform.up = direction;
         Physics2D.IgnoreCollision(playerCollider, projectileInstance.GetComponent<Collider2D>());
 
-        if (projectileInstance.TryGetComponent<DealDamageOnContact>(out DealDamageOnContact dealDamage))
+        if (projectileInstance.TryGetComponent<Projectile>(out Projectile projectile))
         {
-            dealDamage.SetOwner(OwnerClientId);
+            projectile.Initialise(player.TeamIndex.Value);
         }
 
         if (projectileInstance.TryGetComponent<Rigidbody2D>(out Rigidbody2D rb))
@@ -87,18 +102,18 @@ public class ProjectileLauncher : NetworkBehaviour
             rb.linearVelocity = rb.transform.up * projectileSpeed;
         }
 
-        SpawnDummyProjectileClientRpc(spawnPos, direction);
+        SpawnDummyProjectileClientRpc(spawnPos, direction, player.TeamIndex.Value);
     }
 
     [Rpc(SendTo.ClientsAndHost)]
-    private void SpawnDummyProjectileClientRpc(Vector3 spawnPos, Vector3 direction)
+    private void SpawnDummyProjectileClientRpc(Vector3 spawnPos, Vector3 direction, int teamIndex)
     {
         if (IsOwner) { return; }
 
-        SpawnDummyProjectile(spawnPos, direction);
+        SpawnDummyProjectile(spawnPos, direction, teamIndex);
     }
 
-    private void SpawnDummyProjectile(Vector3 spawnPos, Vector3 direction)
+    private void SpawnDummyProjectile(Vector3 spawnPos, Vector3 direction, int teamIndex)
     {
         muzzleFlash.SetActive(true);
         muzzleFlashTimer = muzzleFlashDuration;
@@ -112,10 +127,14 @@ public class ProjectileLauncher : NetworkBehaviour
 
         Physics2D.IgnoreCollision(playerCollider, projectileInstance.GetComponent<Collider2D>());
 
+        if (projectileInstance.TryGetComponent<Projectile>(out Projectile projectile))
+        {
+            projectile.Initialise(teamIndex);
+        }
+
         if (projectileInstance.TryGetComponent<Rigidbody2D>(out Rigidbody2D rb))
         {
             rb.linearVelocity = rb.transform.up * projectileSpeed;
         }
     }
 }
-

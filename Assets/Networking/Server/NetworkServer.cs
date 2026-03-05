@@ -1,20 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 
 public class NetworkServer : IDisposable
 {
     private NetworkManager networkManager;
+    private NetworkObject playerPrefab;
 
     public Action<string> OnClientLeft;
 
     private Dictionary<ulong, string> clientIdToAuth = new Dictionary<ulong, string>();
     private Dictionary<string, UserData> authIdToUserData = new Dictionary<string, UserData>();
 
-    public NetworkServer(NetworkManager networkManager)
+    public NetworkServer(NetworkManager networkManager, NetworkObject playerPrefab)
     {
         this.networkManager = networkManager;
+        this.playerPrefab = playerPrefab;
 
         networkManager.ConnectionApprovalCallback += ApprovalCheck;
         networkManager.OnServerStarted += OnNetworkReady;
@@ -44,13 +47,23 @@ public class NetworkServer : IDisposable
 
         clientIdToAuth[request.ClientNetworkId] = userData.userAuthId;
         authIdToUserData[userData.userAuthId] = userData;
-        //Debug.Log(userData.userName);
+
+        _ = SpawnPlayerDelayed(request.ClientNetworkId);
 
         response.Approved = true;
-        response.Position = SpawnPoint.GetRandomSpawnPos();
-        response.Rotation = Quaternion.identity;
-        response.CreatePlayerObject = true;
+        response.CreatePlayerObject = false;
     }
+
+    private async Task SpawnPlayerDelayed(ulong clientId)
+    {
+        await Task.Delay(1000);
+
+        NetworkObject playerInstance = GameObject.Instantiate(playerPrefab,
+            SpawnPoint.GetRandomSpawnPos(), Quaternion.identity);
+
+        playerInstance.SpawnAsPlayerObject(clientId);
+    }
+
 
     public UserData GetUserDataByClientId(ulong clientId)
     {
@@ -68,6 +81,7 @@ public class NetworkServer : IDisposable
     public void Dispose()
     {
         if (networkManager == null) { return; }
+
         networkManager.ConnectionApprovalCallback -= ApprovalCheck;
         networkManager.OnClientDisconnectCallback -= OnClientDisconnect;
         networkManager.OnServerStarted -= OnNetworkReady;

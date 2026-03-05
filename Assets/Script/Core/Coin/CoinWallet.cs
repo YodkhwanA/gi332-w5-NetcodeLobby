@@ -1,8 +1,24 @@
-﻿using Unity.Netcode;
+﻿using System;
+using Unity.Netcode;
 using UnityEngine;
 
 public class CoinWallet : NetworkBehaviour
 {
+    [Header("References")]
+    [SerializeField] private Health health;
+    [SerializeField] private BountyCoin coinPrefab;
+
+    [Header("Settings")]
+    [SerializeField] private float coinSpread = 3f;
+    [SerializeField] private float bountyPercentage = 50f;
+    [SerializeField] private int bountyCoinCount = 10;
+    [SerializeField] private int minBountyCoinValue = 5;
+    [SerializeField] private LayerMask layerMask;
+
+    private Collider2D[] coinBuffer = new Collider2D[1];
+
+    private float coinRadius;
+
     public NetworkVariable<int> TotalCoins = new NetworkVariable<int>();
 
     public void SpendCoins(int costToFire)
@@ -20,9 +36,47 @@ public class CoinWallet : NetworkBehaviour
 
         TotalCoins.Value += coinValue;
     }
+
+    public override void OnNetworkSpawn()
+    {
+        if (!IsServer) { return; }
+        coinRadius = coinPrefab.GetComponent<CircleCollider2D>().radius;
+        health.OnDie += HandleDie;
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        if (!IsServer) { return; }
+
+        health.OnDie -= HandleDie;
+    }
+
+    private void HandleDie(Health health)
+    {
+        int bountyValue = (int)(TotalCoins.Value * (bountyPercentage / 100f));
+        int bountyCoinValue = bountyValue / bountyCoinCount;
+        if (bountyCoinValue < minBountyCoinValue) { return; }
+
+        for (int i = 0; i < bountyCoinCount; i++)
+        {
+            BountyCoin coinInstance = Instantiate(coinPrefab, GetSpawnPoint(), Quaternion.identity);
+            coinInstance.SetValue(bountyCoinValue);
+            coinInstance.NetworkObject.Spawn();
+        }
+    }
+
+    private Vector2 GetSpawnPoint()
+    {
+        while (true)
+        {
+            Vector2 spawnPoint = (Vector2)transform.position + UnityEngine.Random.insideUnitCircle * coinSpread;
+            ContactFilter2D contactFilter2D = new ContactFilter2D();
+            contactFilter2D.layerMask = layerMask;
+            int numColliders = Physics2D.OverlapCircle(spawnPoint, coinRadius, contactFilter2D, coinBuffer);
+            if (numColliders == 0)
+            {
+                return spawnPoint;
+            }
+        }
+    }
 }
-
-
-//เขียนเพื่อให้ผู้เล่นเก็บเหรียญได้ถ้า coin มี colider โดยจะมีเงื่อนไขว่าต้องเป็นใน server ถึงจะเก็บเหรียญเข้ากระเป๋าได้
-//เรียนจะหายไปทั้ง server และ client แต่ค่าเหรียญจะเข้าที่ client
-//ยิงแล้วเหรียญลดด้วย

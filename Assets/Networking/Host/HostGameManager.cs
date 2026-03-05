@@ -17,6 +17,7 @@ using UnityEngine.SceneManagement;
 public class HostGameManager : IDisposable
 {
     private Allocation allocation;
+    private NetworkObject playerPrefab;
 
     private string lobbyId;
     public string JoinCode { get; private set; }
@@ -25,7 +26,13 @@ public class HostGameManager : IDisposable
     private const int MaxConnections = 20;
     private const string GameSceneName = "Game";
     private const string JoinCodeKey = "JoinCode";
-    public async Task StartHostAsync()
+
+    public HostGameManager(NetworkObject playerPrefab)
+    {
+        this.playerPrefab = playerPrefab;
+    }
+
+    public async Task StartHostAsync(bool isPrivate)
     {
         try
         {
@@ -56,7 +63,7 @@ public class HostGameManager : IDisposable
         try
         {
             CreateLobbyOptions lobbyOptions = new CreateLobbyOptions();
-            lobbyOptions.IsPrivate = false;
+            lobbyOptions.IsPrivate = isPrivate;
             lobbyOptions.Data = new Dictionary<string, DataObject>()
             {
                 {
@@ -79,7 +86,7 @@ public class HostGameManager : IDisposable
             return;
         }
 
-        NetworkServer = new NetworkServer(NetworkManager.Singleton);
+        NetworkServer = new NetworkServer(NetworkManager.Singleton, playerPrefab);
 
         UserData userData = new UserData
         {
