@@ -384,9 +384,6 @@ GameObject:
   - component: {fileID: 4548453994952810740}
   - component: {fileID: 6587808346732506906}
   - component: {fileID: 2921210072302377170}
-  - component: {fileID: 6880633882328823508}
-  - component: {fileID: 6949249928133382804}
-  - component: {fileID: -8282586792514938923}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -426,19 +423,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 846818747
+  GlobalObjectIdHash: 3156516560
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
-  Ownership: 1
-  AlwaysReplicateAsRoot: 0
+  Ownership: 7
+  AlwaysReplicateAsRoot: 1
   SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
+  ActiveSceneSynchronization: 1
   SceneMigrationSynchronization: 1
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
-  AllowOwnerToParent: 0
+  AllowOwnerToParent: 1
 --- !u!114 &4862129810214324426
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -620,7 +617,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Health
   ShowTopMostFoldoutHeaderGroup: 1
   CurrentHealth:
-    m_InternalValue: 0
+    m_InternalValue: 100
   <MaxHealth>k__BackingField: 100
 --- !u!114 &4548453994952810740
 MonoBehaviour:
@@ -700,7 +697,7 @@ MonoBehaviour:
   minBountyCoinValue: 5
   layerMask:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 0
   TotalCoins:
     m_InternalValue: 0
 --- !u!114 &2921210072302377170
@@ -721,44 +718,6 @@ MonoBehaviour:
   - {fileID: 2588399159307525044}
   - {fileID: 7966016731969621948}
   colorIndex: 0
---- !u!114 &6880633882328823508
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1909238749889381228}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e2d506f2c1f86ac4caf9170655a43c17, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Lifetime
-  lifetime: 2
---- !u!114 &6949249928133382804
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1909238749889381228}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e96dc374143d57143ab3138a2023d29d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DestroySelfOnContact
-  projectile: {fileID: 2734590600508873750, guid: 352dd7138ba243140aafa9acf60a316c, type: 3}
---- !u!114 &-8282586792514938923
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1909238749889381228}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b86a4726585468f4eb9b14f256015dca, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Projectile
 --- !u!1 &2266995836946985509
 GameObject:
   m_ObjectHideFlags: 0

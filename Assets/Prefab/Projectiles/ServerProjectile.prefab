@@ -93,4 +93,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DealDamageOnContact
   projectile: {fileID: 6846810277144065264}
-  damage: 5
+  damage: 25
